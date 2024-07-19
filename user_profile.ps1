@@ -1,38 +1,7 @@
 # YusufKhlaifa's powershell (based on christitustech at "github.com/ChrisTitusTech/powershell-profile/")
-# Find out if the current user identity is elevated (has admin rights)
-$identity = [Security.Principal.WindowsIdentity]::GetCurrent()
-$principal = New-Object Security.Principal.WindowsPrincipal $identity
-$isAdmin = $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
-
-# If so and the current host is a command line, then change to red color 
-# as warning to user that they are operating in an elevated context
-# Useful shortcuts for traversing directories
-function cd... { Set-Location ..\.. }
-function cd.... { Set-Location ..\..\.. }
-
-function prompt { 
-    if ($isAdmin) {
-        "[" + (Get-Location) + "] # " 
-    } else {
-        "[" + (Get-Location) + "] $ "
-    }
-}
-
-function admin {
-    if ($args.Count -gt 0) {   
-        $argList = "& '" + $args + "'"
-        Start-Process "$psHome\powershell.exe" -Verb runAs -ArgumentList $argList
-    } else {
-        Start-Process "$psHome\powershell.exe" -Verb runAs
-    }
-}
 
 # Alias
 #
-# Set UNIX-like aliases for the admin command, so sudo <command> will run the command
-# with elevated rights. 
-Set-Alias -Name su -Value admin
-Set-Alias -Name sudo -Value admin
 Set-Alias -Name vim -Value nvim
 
 function rm($file) {
@@ -85,14 +54,6 @@ function find-file($name) {
         Write-Output "${place_path}\${_}"
     }
 }
-function unzip ($file) {
-    Write-Output("Extracting", $file, "to", $pwd)
-    $fullFile = Get-ChildItem -Path $pwd -Filter .\cove.zip | ForEach-Object { $_.FullName }
-    Expand-Archive -Path $fullFile -DestinationPath $pwd
-}
-function ix ($file) {
-    curl.exe -F "f:1=@$file" ix.io
-}
 function grep($regex, $dir) {
     if ( $dir ) {
         Get-ChildItem $dir | select-string $regex
@@ -104,14 +65,14 @@ function touch($file) {
     "" | Out-File $file -Encoding ASCII
 }
 function df {
-    get-volume
+    Get-Volume
 }
 function sed($file, $find, $replace) {
     (Get-Content $file).replace("$find", $replace) | Set-Content $file
 }
  
 # zoxide (autocompletion)
-Invoke-Expression (& { (zoxide init powershell | Out-String) })
+Invoke-Expression (& { (zoxide init powershell --cmd z --hook pwd  | Out-String) })
 
 # Import the Chocolatey Profile that contains the necessary code to enable
 # tab-completions to function for `choco`.
@@ -124,5 +85,5 @@ if (Test-Path($ChocolateyProfile)) {
 }
 
 ## Final Line to set prompt
-oh-my-posh init pwsh --config https://raw.githubusercontent.com/JanDeDobbeleer/oh-my-posh/main/themes/cobalt2.omp.json | Invoke-Expression
+oh-my-posh init pwsh --config C:\Users\y\AppData\Local\Programs\oh-my-posh\themes\cobalt2.omp.json | Invoke-Expression
 Import-Module -Name Terminal-Icons
